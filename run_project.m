@@ -53,9 +53,9 @@ analyze_rest_in_affect; % Gen. REST-IN surrogates
 calc_id_in_beta;      % Extract features
 mvpa_id_in_affect;    % Predict affect of Id-IN trials
 analyze_id_in_affect; % Test IN task performance
-                      %   1) Test out-sample IN-cue predict
-                      %   2) Estimate base Id-IN performance
-                      %   3) Control for Rest-IN surrogates
+                    %   1) Test out-sample IN-cue predict
+                    %   2) Estimate base Id-IN performance
+                    %   3) Control for Rest-IN surrogates
 
 %% ----------------------------------------
 %% Check Trigger Threshold

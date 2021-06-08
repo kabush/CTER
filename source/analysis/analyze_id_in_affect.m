@@ -348,6 +348,9 @@ scatter(cue_val,recall_val,Smark,'MarkerFaceColor',...
         proj.param.plot.white,'MarkerEdgeColor',...
         proj.param.plot.very_light_grey);
 
+plt_tbl = table(cue_val,recall_val,'VariableNames',{'cue','recall'});
+writetable(plt_tbl,'val_scatter.txt','Delimiter','\t');
+
 %% Plot non-significant single subjs
 for i = 1:numel(subjs)
     name = subjs{i}.name;
@@ -417,6 +420,7 @@ export_fig cue_recall_entrain_hist_val.png -r300
 eval(['! mv ',proj.path.code,'cue_recall_entrain_hist_val.png ',...
       proj.path.fig,'cue_recall_entrain_hist_val.png']);
 
+writetable(table(x),'val_entrain.txt');
 
 %% ----------------------------------------
 %% Plotting AROUSAL IN-recall 
@@ -430,6 +434,9 @@ Smark = 10;
 scatter(cue_aro,recall_aro,Smark,'MarkerFaceColor',...
         proj.param.plot.white,'MarkerEdgeColor',...
         proj.param.plot.very_light_grey);
+
+plt_tbl = table(cue_aro,recall_aro,'VariableNames',{'cue','recall'});
+writetable(plt_tbl,'aro_scatter.txt','Delimiter','\t');
 
 %% Plot non-significant single subjs
 for i = 1:numel(subjs)
@@ -501,4 +508,6 @@ export_fig cue_recall_entrain_hist_aro.png -r300
 eval(['! mv ',proj.path.code,'cue_recall_entrain_hist_aro.png ',...
       proj.path.fig,'cue_recall_entrain_hist_aro.png']);
 
+
+writetable(table(x),'aro_entrain.txt');
 

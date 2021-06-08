@@ -132,33 +132,15 @@ logger(['-ALL TRIALS (FB previous as a function of IN skill params-'],proj.path.
 tbl = table(trg,in_val_b1,in_aro_b1,in_val_b0,in_aro_b0,age,sex,...
             'VariableNames',{'trg','invb1','inab1','invb0','inab0','age','sex'});
 
-mdl = fitlme(tbl,['trg ~ 1 + invb1 + inab1 ' ...
-                    '+ invb0 + inab0 + age + sex']);
+mdl = fitlme(tbl,['trg ~ 1 + invb1 + inab1 + invb0 + inab0 ' ...
+                 '+ invb1*inab1 ' ...
+                 '+ invb1*inab0 ' ...
+                 '+ invb1*invb0 ' ...
+                 '+ inab1*inab0 ' ...
+                 '+ invb1*age ' ...
+                 '+ invb0*age ' ...
+                 '+ invb1*sex ' ...
+                 '+ invb0*sex ' ...
+                 '+ age*sex ']);
 
-%% Extract Fixed effects
-[~,~,FE] = fixedEffects(mdl);
-
-%% Compute effect size
-Rsqr = mdl.Rsquared.Adjusted;
-Fsqr = Rsqr/(1-Rsqr);
-
-logger(['  Intercept=',num2str(FE.Estimate(1))],proj.path.logfile);
-logger(['           p=',num2str(FE.pValue(1))],proj.path.logfile);
-
-logger(['  IN Val b1 Beta=',num2str(FE.Estimate(2))],proj.path.logfile);
-logger(['           p=',num2str(FE.pValue(2))],proj.path.logfile);
-
-logger(['  IN Aro b1 Beta=',num2str(FE.Estimate(3))],proj.path.logfile);
-logger(['           p=',num2str(FE.pValue(3))],proj.path.logfile);
-
-logger(['  IN Val b0 Beta=',num2str(FE.Estimate(4))],proj.path.logfile);
-logger(['           p=',num2str(FE.pValue(4))],proj.path.logfile);
-
-logger(['  IN Aro b0 Beta=',num2str(FE.Estimate(5))],proj.path.logfile);
-logger(['           p=',num2str(FE.pValue(5))],proj.path.logfile);
-
-logger(['  Age Beta=',num2str(FE.Estimate(6))],proj.path.logfile);
-logger(['           p=',num2str(FE.pValue(6))],proj.path.logfile);
-
-logger(['  Sex Beta=',num2str(FE.Estimate(7))],proj.path.logfile);
-logger(['           p=',num2str(FE.pValue(7))],proj.path.logfile);
+save([proj.path.analysis.mod_fb_via_in_perf,'mdl.mat'],'mdl');
