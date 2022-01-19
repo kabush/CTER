@@ -1,0 +1,104 @@
+#! /bin/csh
+
+# ========================================
+# BUILD PATHS
+# ========================================
+
+## Pull information from the command line
+set tmppath = $1
+
+## Strip trailing forward slash from tmppath
+echo ${tmppath} | rev | cut -c 2- | rev > ./tmp.txt
+set tmppath = `cat ./tmp.txt`
+rm ./tmp.txt
+echo ${tmppath} # debug
+
+## Strip trailing forward slash from input path
+cat ${tmppath}/in_path.txt | rev | cut -c 2- | rev > ./tmp.txt
+set inpath = `cat ./tmp.txt`
+rm ./tmp.txt
+echo ${inpath} # debug
+
+# ## Strip trailing forward slash from output path
+# cat ${tmppath}/out_path.txt | rev | cut -c 2- | rev > ./tmp.txt
+# set outpath = `cat ./tmp.txt`
+# rm ./tmp.txt
+# echo ${outpath} # debug
+
+## Access temp directory
+cd ${tmppath} 
+
+## Load params
+set subj = `cat ./subject.txt`
+set task = `cat ./task.txt`
+set Nvol = `cat ./Nvol.txt`
+set TR = `cat ./TR.txt`
+set stim_t = `cat ./stim_t.txt`
+
+echo ${subj}
+echo ${task}
+echo ${Nvol}
+echo ${TR}
+echo ${stim_t}
+
+cd ${tmppath}
+
+## ----------------------------------------
+## Use 3dDeconvolve solely to construct and format the regression target, y.)
+## To view the formulated problem, execute the following code: 1dplot <file.1D>
+3dDeconvolve \
+    -force_TR ${TR} \
+    -input ${inpath}/sub-${subj}/sub-${subj}_task-${task}.scaled.resid.nii \
+    -polort A \
+    -censor censor.1D \
+    -num_stimts 25 \
+    -stim_file 1  motion.1D'[0]' -stim_base 1 \
+    -stim_file 2  motion.1D'[1]' -stim_base 2 \
+    -stim_file 3  motion.1D'[2]' -stim_base 3 \
+    -stim_file 4  motion.1D'[3]' -stim_base 4 \
+    -stim_file 5  motion.1D'[4]' -stim_base 5 \
+    -stim_file 6  motion.1D'[5]' -stim_base 6 \
+    -stim_file 7  motion.1D'[6]' -stim_base 7 \
+    -stim_file 8  motion.1D'[7]' -stim_base 8 \
+    -stim_file 9  motion.1D'[8]' -stim_base 9 \
+    -stim_file 10 motion.1D'[9]' -stim_base 10 \
+    -stim_file 11 motion.1D'[10]' -stim_base 11 \
+    -stim_file 12 motion.1D'[11]' -stim_base 12 \
+    -stim_file 13 motion.1D'[12]' -stim_base 13 \
+    -stim_file 14 motion.1D'[13]' -stim_base 14 \
+    -stim_file 15 motion.1D'[14]' -stim_base 15 \
+    -stim_file 16 motion.1D'[15]' -stim_base 16 \
+    -stim_file 17 motion.1D'[16]' -stim_base 17 \
+    -stim_file 18 motion.1D'[17]' -stim_base 18 \
+    -stim_file 19 motion.1D'[18]' -stim_base 19 \
+    -stim_file 20 motion.1D'[19]' -stim_base 20 \
+    -stim_file 21 motion.1D'[20]' -stim_base 21 \
+    -stim_file 22 motion.1D'[21]' -stim_base 22 \
+    -stim_file 23 motion.1D'[22]' -stim_base 23 \
+    -stim_file 24 motion.1D'[23]' -stim_base 24 \
+    -stim_times_IM 25 stim_times.1D 'BLOCK4('${stim_t}/',1)' \
+    -x1D matrix.1D \
+    -x1D_stop 
+
+## ----------------------------------------
+## Solve for the beta coefficients of GLM
+3dLSS \
+	 -automask \
+	 -input ${inpath}/sub-${subj}/sub-${subj}_task-${task}.scaled.resid.nii \
+	 -matrix matrix.1D \
+	 -prefix sub-${subj}_lss \
+	 -verb
+
+## ----------------------------------------
+## Convert to nifti format
+3dAFNItoNIFTI sub-${subj}_lss+tlrc -verb
+
+## ----------------------------------------
+## Clean-up
+rm 3dDeconvolve.err
+rm concat_runs+tlrc*
+rm matrix_sub-${subj}.1D
+rm error+tlrc*
+rm Decon.REML_cmd
+rm Decon+tlrc.*
+rm sub-${subj}_lss+tlrc*

@@ -1,0 +1,14 @@
+#! /bin/csh
+
+set subjs = `cat ./subj_lists/CTER_subj_list.txt`
+set pypath = /home/kabush/.local/lib/python3.7/site-packages
+set inpath = /home/kabush/workspace/bids/CTER
+set outpath = /home/kabush/workspace/data/CTER/derivatives
+set licensepath = /home/kabush/licenses/fsl_license.txt
+set workpath = /project/work_bids
+
+foreach subj (${subjs})
+    
+    python3 ${pypath}/fmriprep_docker.py ${inpath} ${outpath} --fs-license-file ${licensepath} --fs-no-reconall -w ${workpath} --output-spaces MNI152NLin2009cAsym:res-native --participant_label sub-$subj 
+
+end

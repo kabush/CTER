@@ -1,0 +1,163 @@
+# ========================================
+# ========================================
+# Keith Bush, PhD (2020)
+# Univ. of Arkansas for Medical Sciences
+# Brain Imaging Research Center (BIRC)
+# ========================================
+# ========================================
+
+# ----------------------------------------
+# ----------------------------------------
+    OVERVIEW: 
+# ----------------------------------------
+# ----------------------------------------
+
+This project is the analysis pipeline used to conduct the 
+"Causaul Test of Emotion Regulation in the Affective Perception
+of Image Stimuli (CTER)" study funded by the Brain and Behavioral
+Research Foundation NARSAD Young Investigator Award #26079 
+sponsored by the Families for Borderline Personality Disorder
+Research. 
+
+# ----------------------------------------
+# ----------------------------------------
+    INTRODUCTION: 
+# ----------------------------------------
+# ----------------------------------------
+
+The purpose of this code is to perform the following tasks:
+
+1) Preprocess fMRI, psychophysiological, and cognitive-behaviorial
+data for the project using best practices (and document literature of
+each step).
+
+2) Construct beta-series (Rissman, 2004) features for each data type
+where relevant (fMRI,SCR,facial EMG, etc).
+
+3) Construct decoding models to predicte affective response to image stimuli.
+
+4) Independently validate the experiment's affect induction paradigm using
+psychophyiological measures of hedonic valence (facial EMG) and arousal
+(skin conductance response).
+
+5) Analyse the  capability of a real-time fMRI guided affective induction
+system (real-time decoding and visualization of valence processing to
+induce extreme positive valence brain-states.
+
+5) Causally test the impact of self-induction of positive affect on the
+affect processing response to congruent (postive) and incongruent (negative)
+affective image stimuli.
+
+6) Analyze the role of unguided affective self-induction on the fidelity
+of real-time fMRI guidance to states of high-positive affect (testing
+the so-called BCI illiteracy effect).
+
+# ----------------------------------------
+# ----------------------------------------
+    DATA SOURCES:
+# ----------------------------------------
+# ----------------------------------------
+
+DOI 10.17605/OSF.IO/4B5F9
+
+# ----------------------------------------
+# ----------------------------------------
+    PROJECT OVERVIEW:
+# ----------------------------------------
+# ----------------------------------------
+
+/CTER
+    run_project.m  # the master script which sequentially
+    		   # calls all supporting scripts.  If the
+	      	   # project executes correctly then the 
+	      	   # log directory will contain a textual
+	      	   # description of all important statistical
+	      	   # findings and the fig directroy will contain
+	      	   # all important figures.  Intermediate data
+	      	   # will be stored at the path location specified
+	      	   # by proj.path.data in the proj.mat 
+
+    matlab_reset.m # clears the workspace and resets matlab's
+                   # path to the initial launch state
+
+    /fig
+        # where plots are stored
+
+    /log
+        # where statistical findings are stored
+
+    /source
+        init_project.m  # all project parameters
+
+    	clean_project.m # wipes the directory storing
+    			# intermediate files
+        /analysis
+	    # contains code for statistical tests
+	    # and plotting
+        /betas
+	    # beta_series extraction 
+	    # scripts for all data types
+	/haufe
+ 	    # contains code for constructing permuation
+	    # tested Haufe-transformed encoding parameters
+        /mvpa
+	    # whole-brain MVPA predictions of affect
+        /process
+            # preprocessing scripts for all data types
+
+    /subj_lists
+        # stores text files listing the included
+	# subjects for each study being used in
+	# this project analysis
+
+# ----------------------------------------
+# ----------------------------------------
+    REQUIRED TOOLS
+# ----------------------------------------
+# ----------------------------------------
+
+matlab (Tested only for R2016B)
+    - statistical analysis toolbox
+    - parallel computing toolbox
+
+AFNI (Version AFNI_18.2.06)
+
+FSL (5.0.9)
+
+# ----------------------------------------
+# ----------------------------------------
+    REQUIRED LIBRARIES
+# ----------------------------------------
+# ----------------------------------------
+
+fmriprep
+    https://fmriprep.org/en/stable/
+
+kablab
+    https://github.com/kabush/kablab    
+
+scralyze
+    http://pspm.sourceforge.net/
+
+export_fig
+    https://www.mathworks.com/matlabcentral/fileexchange/23629-export-fig
+
+nifti (Jimmy Shen)
+    https://www.mathworks.com/matlabcentral/fileexchange/8797-tools-for-nifti-and-analyze-image?s_tid=prof_contriblnk
+
+# ----------------------------------------
+# ----------------------------------------
+    TO Run fmriprep
+# ----------------------------------------
+# ----------------------------------------
+
+# Preps the data directories
+./run_setup
+
+# Runs base preprocessing of CTER project (run on bigdata)
+sudo ./run_fmriprep
+
+
+
+
+

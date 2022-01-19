@@ -1,0 +1,342 @@
+#! /bin/csh
+
+# ========================================
+# BUILD PATHS
+# ========================================
+
+## Pull information from the command line
+set tmppath = $1
+
+## Strip trailing forward slash from tmppath
+echo ${tmppath} | rev | cut -c 2- | rev > ./tmp.txt
+set tmppath = `cat ./tmp.txt`
+rm ./tmp.txt
+echo ${tmppath} # debug
+
+## Strip trailing forward slash from input path
+cat ${tmppath}/in_path.txt | rev | cut -c 2- | rev > ./tmp.txt
+set inpath = `cat ./tmp.txt`
+rm ./tmp.txt
+echo ${inpath} # debug
+
+## Strip trailing forward slash from output path
+cat ${tmppath}/out_path.txt | rev | cut -c 2- | rev > ./tmp.txt
+set outpath = `cat ./tmp.txt`
+rm ./tmp.txt
+echo ${outpath} # debug
+
+## Access temp directory
+cd ${tmppath} 
+
+## Load params
+set subj = `cat ./subject.txt`
+set task = `cat ./task.txt`
+set scan = `cat ./scan.txt`
+set space = `cat ./space.txt`
+set desc = `cat ./desc.txt`
+set fwhm = `cat ./fwhm.txt`
+set temp_hz = `cat ./temp_hz.txt`
+
+echo ${subj}
+echo ${task}
+echo ${scan}
+echo ${space}
+echo ${desc}
+echo ${fwhm}
+echo ${temp_hz}
+
+## Transition to study data directory
+cd ${outpath}/sub-${subj}
+
+
+if ( ${task} == 'rest' ) then
+
+   echo ""
+   echo -------------------------------------------------------------------------------
+   echo - REST Compute raw global mean for each voxel
+   echo -------------------------------------------------------------------------------
+	3dTstat -prefix sub-${subj}_task-${task}.mean \
+       ${inpath}/sub-${subj}/func/sub-${subj}_task-${task}_space-${space}_desc-${desc}.nii.gz
+
+   echo -------------------------------------------------------------------------------
+   echo regressing out mean global signal because rest data
+   echo -------------------------------------------------------------------------------
+	3dDeconvolve \
+	    -input ${inpath}/sub-${subj}/func/sub-${subj}_task-${task}_space-${space}_desc-${desc}.nii.gz \
+	    -polort A \
+	    -nfirst 0 \
+	    -num_stimts 30 \
+	    -stim_file 1  sub-${subj}_task-${task}_motion.1D'[0]' -stim_base 1 \
+	    -stim_file 2  sub-${subj}_task-${task}_motion.1D'[1]' -stim_base 2 \
+	    -stim_file 3  sub-${subj}_task-${task}_motion.1D'[2]' -stim_base 3 \
+	    -stim_file 4  sub-${subj}_task-${task}_motion.1D'[3]' -stim_base 4 \
+	    -stim_file 5  sub-${subj}_task-${task}_motion.1D'[4]' -stim_base 5 \
+	    -stim_file 6  sub-${subj}_task-${task}_motion.1D'[5]' -stim_base 6 \
+	    -stim_file 7  sub-${subj}_task-${task}_motion.1D'[6]' -stim_base 7 \
+	    -stim_file 8  sub-${subj}_task-${task}_motion.1D'[7]' -stim_base 8 \
+	    -stim_file 9  sub-${subj}_task-${task}_motion.1D'[8]' -stim_base 9 \
+	    -stim_file 10 sub-${subj}_task-${task}_motion.1D'[9]' -stim_base 10 \
+	    -stim_file 11 sub-${subj}_task-${task}_motion.1D'[10]' -stim_base 11 \
+	    -stim_file 12 sub-${subj}_task-${task}_motion.1D'[11]' -stim_base 12 \
+	    -stim_file 13 sub-${subj}_task-${task}_motion.1D'[12]' -stim_base 13 \
+	    -stim_file 14 sub-${subj}_task-${task}_motion.1D'[13]' -stim_base 14 \
+	    -stim_file 15 sub-${subj}_task-${task}_motion.1D'[14]' -stim_base 15 \
+	    -stim_file 16 sub-${subj}_task-${task}_motion.1D'[15]' -stim_base 16 \
+	    -stim_file 17 sub-${subj}_task-${task}_motion.1D'[16]' -stim_base 17 \
+	    -stim_file 18 sub-${subj}_task-${task}_motion.1D'[17]' -stim_base 18 \
+	    -stim_file 19 sub-${subj}_task-${task}_motion.1D'[18]' -stim_base 19 \
+	    -stim_file 20 sub-${subj}_task-${task}_motion.1D'[19]' -stim_base 20 \
+	    -stim_file 21 sub-${subj}_task-${task}_motion.1D'[20]' -stim_base 21 \
+	    -stim_file 22 sub-${subj}_task-${task}_motion.1D'[21]' -stim_base 22 \
+	    -stim_file 23 sub-${subj}_task-${task}_motion.1D'[22]' -stim_base 23 \
+	    -stim_file 24 sub-${subj}_task-${task}_motion.1D'[23]' -stim_base 24 \
+	    -stim_file 25 sub-${subj}_task-${task}_motion.1D'[24]' -stim_base 25 \
+	    -stim_file 26 sub-${subj}_task-${task}_motion.1D'[25]' -stim_base 26 \
+	    -stim_file 27 sub-${subj}_task-${task}_motion.1D'[26]' -stim_base 27 \
+	    -stim_file 28 sub-${subj}_task-${task}_motion.1D'[27]' -stim_base 28 \
+	    -stim_file 29 sub-${subj}_task-${task}_motion.1D'[28]' -stim_base 29 \
+	    -stim_file 30 sub-${subj}_task-${task}_motion.1D'[29]' -stim_base 30 \
+	    -x1D ${outpath}/sub-${subj}/sub-${subj}_task-${task}.resid.xmat.1D \
+	    -x1D_stop 
+
+   #*** REGRESS OUT MOTION AND MEAN SIGNAL (WITHOUT GLOBAL) ***
+   3dREMLfit -input ${inpath}/sub-${subj}/func/sub-${subj}_task-${task}_space-${space}_desc-${desc}.nii.gz \
+       -matrix sub-${subj}_task-${task}.resid.xmat.1D \
+       -automask \
+       -Rbuck temp.bucket \
+       -Rerrts sub-${subj}_task-${task}.motion.resid
+
+   #Clean-up   
+   rm *xmat.1D*
+   rm 3dDeconvolve.err
+   rm 3dREMLfit.err
+   rm Decon.REML_cmd
+
+   echo ""
+   echo -------------------------------------------------------------------------------
+   echo spatial smoothing
+   echo -------------------------------------------------------------------------------
+   rm sub-${subj}_task-${task}.smooth.resid+tlrc*
+   3dBlurToFWHM -input sub-${subj}_task-${task}.motion.resid+tlrc \
+   	    -prefix sub-${subj}_task-${task}.smooth.resid \
+   	    -FWHM ${fwhm} \
+   	    -automask
+
+   #Clean-up   
+	rm sub-${subj}_task-${task}.motion.resid+tlrc*
+
+   echo ""
+   echo -------------------------------------------------------------------------------
+   echo detrending
+   echo ------------------------------------------------------------------------------- 
+	rm sub-${subj}_task-${task}.detrend.resid+tlrc*
+   3dDetrend -overwrite -verb -polort 2 \
+   	    -prefix sub-${subj}_task-${task}.detrend.resid \
+		    sub-${subj}_task-${task}.smooth.resid+tlrc 
+
+   rm add_mean+tlrc*
+   3dcalc -a sub-${subj}_task-${task}.detrend.resid+tlrc \
+          -b sub-${subj}_task-${task}.mean+tlrc \
+	       -expr 'a+b' -prefix add_mean
+
+   rm sub-${subj}_task-${task}.detrend.resid+tlrc* 
+   3drename add_mean+tlrc sub-${subj}_task-${task}.detrend.resid 
+   rm add_mean+tlrc*
+
+	#Clean-up
+	rm sub-${subj}_task-${task}.smooth.resid+tlrc*
+
+   echo ""
+   echo -------------------------------------------------------------------------------
+   echo temporal filtering
+   echo -------------------------------------------------------------------------------
+   rm sub-${subj}_task-${task}.fourier.resid+tlrc*
+   3dFourier -prefix sub-${subj}_task-${task}.fourier.resid \
+   	  -retrend -highpass ${temp_hz} sub-${subj}_task-${task}.detrend.resid+tlrc
+
+	#Clean-up   	    
+   rm sub-${subj}_task-${task}.detrend.resid+tlrc*
+
+   echo ""
+   echo -------------------------------------------------------------------------------
+   echo scaling to percent signal change
+   echo -------------------------------------------------------------------------------
+   rm sub-${subj}_task-${task}.mean.resid+tlrc*
+   rm sub-${subj}_task-${task}.mask.resid+tlrc*
+   rm sub-${subj}_task-${task}.min.resid+tlrc*
+   rm sub-${subj}_task-${task}.scaled.resid+tlrc*
+    
+   3dTstat -mean -prefix sub-${subj}_task-${task}.mean.resid sub-${subj}_task-${task}.fourier.resid+tlrc 
+   3dTstat -min -prefix sub-${subj}_task-${task}.min.resid sub-${subj}_task-${task}.fourier.resid+tlrc 
+    			
+   3dAutomask -dilate 1 \
+       -prefix sub-${subj}_task-${task}.mask.resid \
+       sub-${subj}_task-${task}.fourier.resid+tlrc
+    
+   3dcalc -a sub-${subj}_task-${task}.fourier.resid+tlrc \
+       -b sub-${subj}_task-${task}.mean.resid+tlrc \
+       -c sub-${subj}_task-${task}.mask.resid+tlrc \
+       -expr "c*((a/b)*100)" \
+       -float \
+       -prefix sub-${subj}_task-${task}.scaled.resid
+ 
+   #Generate NIFTI version
+   3dAFNItoNIFTI sub-${subj}_task-${task}.scaled.resid+tlrc
+
+   #Clean-up
+   rm sub-${subj}_task-${task}.scaled.resid+tlrc*
+   rm sub-${subj}_task-${task}.fourier.resid+tlrc*
+   rm sub-${subj}_task-${task}.mean+tlrc*
+   rm sub-${subj}_task-${task}.mean.resid+tlrc*
+   rm sub-${subj}_task-${task}.mask.resid+tlrc*
+   rm sub-${subj}_task-${task}.min.resid+tlrc*
+   rm sub-${subj}_task-${task}.motion+orig*
+   rm 3dFWHMx.1D
+   rm 3dFWHMx.1D.png
+
+else
+
+   echo ""
+   echo -------------------------------------------------------------------------------
+   echo TASK Compute raw global mean for each voxel
+   echo -------------------------------------------------------------------------------
+	3dTstat -prefix sub-${subj}_task-${task}${scan}.mean \
+       ${inpath}/sub-${subj}/func/sub-${subj}_task-${task}${scan}_space-${space}_desc-${desc}.nii.gz
+       
+	echo -------------------------------------------------------------------------------
+	echo NOT regressing out mean global signal because task data
+	echo -------------------------------------------------------------------------------
+
+	3dDeconvolve \
+	    -input ${inpath}/sub-${subj}/func/sub-${subj}_task-${task}${scan}_space-${space}_desc-${desc}.nii.gz \
+	    -polort A \
+	    -nfirst 0 \
+	    -num_stimts 28 \
+	    -stim_file 1  sub-${subj}_task-${task}${scan}_motion.1D'[0]' -stim_base 1 \
+	    -stim_file 2  sub-${subj}_task-${task}${scan}_motion.1D'[1]' -stim_base 2 \
+	    -stim_file 3  sub-${subj}_task-${task}${scan}_motion.1D'[2]' -stim_base 3 \
+	    -stim_file 4  sub-${subj}_task-${task}${scan}_motion.1D'[3]' -stim_base 4 \
+	    -stim_file 5  sub-${subj}_task-${task}${scan}_motion.1D'[4]' -stim_base 5 \
+	    -stim_file 6  sub-${subj}_task-${task}${scan}_motion.1D'[5]' -stim_base 6 \
+	    -stim_file 7  sub-${subj}_task-${task}${scan}_motion.1D'[6]' -stim_base 7 \
+	    -stim_file 8  sub-${subj}_task-${task}${scan}_motion.1D'[7]' -stim_base 8 \
+	    -stim_file 9  sub-${subj}_task-${task}${scan}_motion.1D'[8]' -stim_base 9 \
+	    -stim_file 10 sub-${subj}_task-${task}${scan}_motion.1D'[9]' -stim_base 10 \
+	    -stim_file 11 sub-${subj}_task-${task}${scan}_motion.1D'[10]' -stim_base 11 \
+	    -stim_file 12 sub-${subj}_task-${task}${scan}_motion.1D'[11]' -stim_base 12 \
+	    -stim_file 13 sub-${subj}_task-${task}${scan}_motion.1D'[12]' -stim_base 13 \
+	    -stim_file 14 sub-${subj}_task-${task}${scan}_motion.1D'[13]' -stim_base 14 \
+	    -stim_file 15 sub-${subj}_task-${task}${scan}_motion.1D'[14]' -stim_base 15 \
+	    -stim_file 16 sub-${subj}_task-${task}${scan}_motion.1D'[15]' -stim_base 16 \
+	    -stim_file 17 sub-${subj}_task-${task}${scan}_motion.1D'[16]' -stim_base 17 \
+	    -stim_file 18 sub-${subj}_task-${task}${scan}_motion.1D'[17]' -stim_base 18 \
+	    -stim_file 19 sub-${subj}_task-${task}${scan}_motion.1D'[18]' -stim_base 19 \
+	    -stim_file 20 sub-${subj}_task-${task}${scan}_motion.1D'[19]' -stim_base 20 \
+	    -stim_file 21 sub-${subj}_task-${task}${scan}_motion.1D'[20]' -stim_base 21 \
+	    -stim_file 22 sub-${subj}_task-${task}${scan}_motion.1D'[21]' -stim_base 22 \
+	    -stim_file 23 sub-${subj}_task-${task}${scan}_motion.1D'[22]' -stim_base 23 \
+	    -stim_file 24 sub-${subj}_task-${task}${scan}_motion.1D'[23]' -stim_base 24 \
+	    -stim_file 25 sub-${subj}_task-${task}${scan}_motion.1D'[24]' -stim_base 25 \
+	    -stim_file 26 sub-${subj}_task-${task}${scan}_motion.1D'[25]' -stim_base 26 \
+	    -stim_file 27 sub-${subj}_task-${task}${scan}_motion.1D'[26]' -stim_base 27 \
+	    -stim_file 28 sub-${subj}_task-${task}${scan}_motion.1D'[27]' -stim_base 28 \
+	    -x1D ${outpath}/sub-${subj}/sub-${subj}_task-${task}${scan}.resid.xmat.1D \
+	    -x1D_stop 
+
+   #*** REGRESS OUT MOTION AND MEAN SIGNAL (WITHOUT GLOBAL) ***
+   3dREMLfit -input ${inpath}/sub-${subj}/func/sub-${subj}_task-${task}${scan}_space-${space}_desc-${desc}.nii.gz \
+       -matrix sub-${subj}_task-${task}${scan}.resid.xmat.1D \
+       -automask \
+       -Rbuck temp.bucket \
+       -Rerrts sub-${subj}_task-${task}${scan}.motion.resid
+
+   #Clean-up   
+   rm *xmat.1D*
+   rm 3dDeconvolve.err
+   rm 3dREMLfit.err
+   rm Decon.REML_cmd
+
+   echo ""
+   echo -------------------------------------------------------------------------------
+   echo spatial smoothing
+   echo -------------------------------------------------------------------------------
+   rm sub-${subj}_task-${task}${scan}.smooth.resid+tlrc*
+   3dBlurToFWHM -input sub-${subj}_task-${task}${scan}.motion.resid+tlrc \
+   	    -prefix sub-${subj}_task-${task}${scan}.smooth.resid \
+   	    -FWHM ${fwhm} \
+   	    -automask
+
+   #Clean-up   
+	rm sub-${subj}_task-${task}${scan}.motion.resid+tlrc*
+
+   echo ""
+   echo -------------------------------------------------------------------------------
+   echo detrending
+   echo ------------------------------------------------------------------------------- 
+	rm sub-${subj}_task-${task}${scan}.detrend.resid+tlrc*
+   3dDetrend -overwrite -verb -polort 2 \
+   	    -prefix sub-${subj}_task-${task}${scan}.detrend.resid \
+		    sub-${subj}_task-${task}${scan}.smooth.resid+tlrc 
+
+   rm add_mean+tlrc*
+   3dcalc -a sub-${subj}_task-${task}${scan}.detrend.resid+tlrc \
+          -b sub-${subj}_task-${task}${scan}.mean+tlrc \
+	       -expr 'a+b' -prefix add_mean
+
+   rm sub-${subj}_task-${task}${scan}.detrend.resid+tlrc* 
+   3drename add_mean+tlrc sub-${subj}_task-${task}${scan}.detrend.resid 
+   rm add_mean+tlrc*
+
+	#Clean-up
+	rm sub-${subj}_task-${task}${scan}.smooth.resid+tlrc*
+
+   echo ""
+   echo -------------------------------------------------------------------------------
+   echo temporal filtering
+   echo -------------------------------------------------------------------------------
+   rm sub-${subj}_task-${task}${scan}.fourier.resid+tlrc*
+   3dFourier -prefix sub-${subj}_task-${task}${scan}.fourier.resid \
+   	  -retrend -highpass ${temp_hz} sub-${subj}_task-${task}${scan}.detrend.resid+tlrc
+
+	#Clean-up   	    
+   rm sub-${subj}_task-${task}${scan}.detrend.resid+tlrc*
+
+   echo ""
+   echo -------------------------------------------------------------------------------
+   echo scaling to percent signal change
+   echo -------------------------------------------------------------------------------
+   rm sub-${subj}_task-${task}${scan}.mean.resid+tlrc*
+   rm sub-${subj}_task-${task}${scan}.mask.resid+tlrc*
+   rm sub-${subj}_task-${task}${scan}.min.resid+tlrc*
+   rm sub-${subj}_task-${task}${scan}.scaled.resid+tlrc*
+    
+   3dTstat -mean -prefix sub-${subj}_task-${task}${scan}.mean.resid sub-${subj}_task-${task}${scan}.fourier.resid+tlrc 
+   3dTstat -min -prefix sub-${subj}_task-${task}${scan}.min.resid sub-${subj}_task-${task}${scan}.fourier.resid+tlrc 
+    			
+   3dAutomask -dilate 1 \
+       -prefix sub-${subj}_task-${task}${scan}.mask.resid \
+       sub-${subj}_task-${task}${scan}.fourier.resid+tlrc
+    
+   3dcalc -a sub-${subj}_task-${task}${scan}.fourier.resid+tlrc \
+       -b sub-${subj}_task-${task}${scan}.mean.resid+tlrc \
+       -c sub-${subj}_task-${task}${scan}.mask.resid+tlrc \
+       -expr "c*((a/b)*100)" \
+       -float \
+       -prefix sub-${subj}_task-${task}${scan}.scaled.resid
+ 
+   #Generate NIFTI version
+   3dAFNItoNIFTI sub-${subj}_task-${task}${scan}.scaled.resid+tlrc
+
+   #Clean-up
+   rm sub-${subj}_task-${task}${scan}.scaled.resid+tlrc*
+   rm sub-${subj}_task-${task}${scan}.fourier.resid+tlrc*
+   rm sub-${subj}_task-${task}${scan}.mean+tlrc*
+   rm sub-${subj}_task-${task}${scan}.mean.resid+tlrc*
+   rm sub-${subj}_task-${task}${scan}.mask.resid+tlrc*
+   rm sub-${subj}_task-${task}${scan}.min.resid+tlrc*
+   rm sub-${subj}_task-${task}${scan}.motion+orig*
+   rm 3dFWHMx.1D
+   rm 3dFWHMx.1D.png
+
+endif   
+

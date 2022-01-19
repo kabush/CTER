@@ -1,0 +1,4 @@
+#! /bin/csh
+
+mkdir /home/kabush/workspace/data/CTER
+mkdir /home/kabush/workspace/data/CTER/derivatives
